@@ -1,96 +1,222 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8">
-  <title>Lua Share</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Share Code</title>
   <style>
-    body { font-family: system-ui; max-width: 900px; margin: 40px auto; padding: 0 16px; }
-    textarea { width: 100%; height: 300px; font-family: monospace; font-size: 14px; }
-    input, button { font-size: 16px; padding: 6px 0; }
-    #result { background: #f0f0f0; padding: 12px; border-radius: 6px; margin-top: 16px; display: none; }
-    code { background: #e8e8e8; padding: 2px 6px; border-radius: 4px; }
-    pre { padding: 16px; border-radius: 6px; background: #f8f8f8; overflow-x: auto; }
+    :root {
+      --bg: #121212;
+      --panel: #1e1e1e;
+      --border: #333;
+      --text: #e0e0e0;
+      --text-muted: #888;
+      --btn-blue: #3b5998;
+      --btn-blue-hover: #4a6cb5;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    
+    /* Header */
+    header { display: flex; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); align-items: center; }
+    .header-left, .header-right { display: flex; gap: 16px; align-items: center; color: var(--text-muted); }
+    header svg { width: 20px; height: 20px; fill: currentColor; cursor: pointer; }
+    
+    /* Banner */
+    .banner-container { padding: 12px 16px; }
+    .banner { width: 100%; height: 120px; border-radius: 8px; background: url('https://i.ibb.co/3s6y6v1/doraemon.jpg') center/cover; position: relative; overflow: hidden; }
+    .banner-text { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+    .banner-plus { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 8px; padding: 0 16px 12px 16px; }
+    .tab { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text); font-size: 14px; text-decoration: none; cursor: pointer; }
+    .tab svg { width: 16px; height: 16px; fill: currentColor; }
+    .tab:hover { background: var(--panel); }
+
+    /* Main Content */
+    main { padding: 0 16px 16px 16px; flex: 1; display: flex; flex-direction: column; }
+    
+    .filename-input { width: 100%; padding: 14px 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 16px; margin-bottom: 12px; outline: none; }
+    .filename-input:focus { border-color: var(--text-muted); }
+
+    .editor-container { display: flex; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; flex: 1; min-height: 300px; margin-bottom: 16px; position: relative; }
+    .line-numbers { padding: 16px 12px; color: var(--text-muted); font-family: monospace; font-size: 14px; border-right: 1px solid var(--border); user-select: none; background: #181818; border-radius: 8px 0 0 8px; text-align: right; min-width: 40px; overflow: hidden; }
+    .code-area { flex: 1; padding: 16px; background: transparent; border: none; color: var(--text); font-family: monospace; font-size: 14px; resize: none; outline: none; line-height: 1.5; white-space: pre; overflow-x: auto; }
+    .code-area::placeholder { color: #555; }
+    
+    .add-line-btn { position: absolute; top: 8px; right: 8px; background: var(--border); border: none; color: var(--text); width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+    .add-line-btn:hover { background: #444; }
+
+    /* Bottom Action */
+    .action-row { display: flex; gap: 8px; }
+    .submit-btn { flex: 1; padding: 14px; background: var(--btn-blue); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 500; cursor: pointer; }
+    .submit-btn:active { background: var(--btn-blue-hover); }
+    .settings-btn { background: var(--panel); border: 1px solid var(--border); color: var(--text-muted); width: 50px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .settings-btn svg { width: 20px; height: 20px; fill: currentColor; }
+
+    /* Footer */
+    footer { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-top: 1px solid var(--border); font-size: 14px; color: var(--text); }
+    .footer-links { display: flex; gap: 16px; align-items: center; }
+    .footer-links a { color: var(--text); text-decoration: none; }
+    .footer-icons { display: flex; gap: 16px; align-items: center; }
+    .footer-icons svg { width: 20px; height: 20px; fill: currentColor; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; background: #e74c3c; }
+
+    /* Modal hiển thị link raw */
+    #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+    .modal-content { background: var(--panel); padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; border: 1px solid var(--border); }
+    .modal-content h3 { margin-bottom: 12px; color: #fff; }
+    .modal-content input { width: 100%; padding: 10px; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; margin-bottom: 16px; outline: none; }
+    .modal-content button { width: 100%; padding: 10px; background: var(--btn-blue); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; }
+    .modal-content button:active { background: var(--btn-blue-hover); }
   </style>
 </head>
 <body>
 
-<!-- ===== CHẾ ĐỘ 1: FORM UPLOAD ===== -->
-<div id="mode-upload" style="display:none">
-  <h1>🐞 Lua Share</h1>
-  <input id="title" placeholder="Tiêu đề snippet" /><br>
-  <textarea id="code" placeholder="-- Dán code Lua vào đây"></textarea>
-  <label><input type="checkbox" id="private"> Riêng tư (cần mật khẩu)</label><br>
-  <input id="password" type="password" placeholder="Mật khẩu (nếu riêng tư)" /><br>
-  <button onclick="submitSnippet()">Tạo link raw</button>
-  <div id="result"></div>
-</div>
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <span style="font-size: 18px; font-weight: bold; color: var(--text); margin-left: 8px;"></span>
+    </div>
+    <div class="header-right">
+      <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+      <span style="border: 1px solid var(--border); padding: 2px 8px; border-radius: 12px; font-size: 12px;">59</span>
+      <svg viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+    </div>
+  </header>
 
-<!-- ===== CHẾ ĐỘ 2: XEM SNIPPET ===== -->
-<div id="mode-view" style="display:none">
-  <h2 id="v-title"></h2>
-  <p id="v-views" style="color:#888"></p>
-  <pre><code id="v-code" class="language-lua"></code></pre>
-</div>
+  <!-- Banner -->
+  <div class="banner-container">
+    <div class="banner">
+      <div class="banner-text">Doraemon</div>
+      <div class="banner-plus">+</div>
+    </div>
+  </div>
 
-<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-lua.min.js"></script>
+  <!-- Tabs -->
+  <div class="tabs">
+    <a href="#" class="tab">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg> trang chủ
+    </a>
+    <a href="#" class="tab">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg> khám phá
+    </a>
+    <a href="#" class="tab">
+      <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg> tìm kiếm
+    </a>
+  </div>
 
-<script>
-// ===== Phát hiện route =====
-const path = location.pathname;
-const isView = path.startsWith('/s/');
+  <!-- Main Content -->
+  <main>
+    <input type="text" id="filename" class="filename-input" value="file.js" />
+    
+    <div class="editor-container">
+      <div class="line-numbers" id="line-numbers">1</div>
+      <textarea id="code" class="code-area" placeholder="Dán vào đây" spellcheck="false"></textarea>
+      <button class="add-line-btn" onclick="addLine()">+</button>
+    </div>
 
-if (isView) {
-  document.getElementById('mode-view').style.display = 'block';
-  loadSnippet(path.split('/').pop());
-} else {
-  document.getElementById('mode-upload').style.display = 'block';
-}
+    <div class="action-row">
+      <button class="submit-btn" onclick="submitCode()">gửi</button>
+      <button class="settings-btn" onclick="alert('Cài đặt đang phát triển')">
+        <svg viewBox="0 0 24 24"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.06-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.73,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.49-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+      </button>
+    </div>
+  </main>
 
-// ===== Chế độ upload =====
-async function submitSnippet() {
-  const body = {
-    title: document.getElementById('title').value || 'untitled',
-    code: document.getElementById('code').value,
-    isPrivate: document.getElementById('private').checked,
-    password: document.getElementById('password').value,
-  };
-  const r = await fetch('/api/snippets', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  const data = await r.json();
-  if (data.error) return alert(data.error);
+  <!-- Footer -->
+  <footer>
+    <div class="footer-links">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/></svg>
+      <a href="#">discord</a>
+      <a href="#">imprint</a>
+      <a href="#">privacy</a>
+    </div>
+    <div class="footer-icons">
+      <svg viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 3.83L19.5 19h-15L12 5.83zM11 16h2v2h-2v-2zm0-6h2v4h-2v-4z"/></svg>
+      <div class="dot"></div>
+    </div>
+  </footer>
 
-  const full = location.origin + data.rawUrl;
-  const box = document.getElementById('result');
-  box.style.display = 'block';
-  box.innerHTML = `
-    <p>✅ Đã tạo!</p>
-    <p>Raw: <code>${full}</code></p>
-    <p>Xem: <a href="${data.viewUrl}" target="_blank">${data.viewUrl}</a></p>
-    <p>Dùng trong script:</p>
-    <code>loadstring(game:HttpGet("${full}"))()</code>
-  `;
-}
+  <!-- Modal Link Raw -->
+  <div id="modal">
+    <div class="modal-content">
+      <h3>✅ Đã tạo link!</h3>
+      <p style="font-size: 12px; color: #888; margin-bottom: 8px;">Copy link dưới đây để sử dụng:</p>
+      <input type="text" id="raw-link" readonly onclick="this.select()">
+      <button onclick="document.getElementById('modal').style.display='none'">Đóng</button>
+    </div>
+  </div>
 
-// ===== Chế độ xem =====
-async function loadSnippet(id) {
-  const pw = new URLSearchParams(location.search).get('pw') || '';
-  const r = await fetch(`/api/snippets/${id}?pw=${encodeURIComponent(pw)}`);
-  const data = await r.json();
-  if (data.error) {
-    document.getElementById('mode-view').innerHTML = `<h3>❌ ${data.error}</h3>`;
-    return;
-  }
-  document.getElementById('v-title').textContent = data.title;
-  document.getElementById('v-views').textContent = `${data.views} lượt xem`;
-  const el = document.getElementById('v-code');
-  el.textContent = data.code;
-  Prism.highlightElement(el);
-}
-</script>
+  <script>
+    const codeArea = document.getElementById('code');
+    const lineNumbers = document.getElementById('line-numbers');
+    const filenameInput = document.getElementById('filename');
+    const modal = document.getElementById('modal');
+    const rawLinkInput = document.getElementById('raw-link');
+
+    // Cập nhật số dòng
+    function updateLineNumbers() {
+      const lines = codeArea.value.split('\n').length;
+      lineNumbers.innerHTML = Array.from({ length: lines }, (_, i) => i + 1).join('<br>');
+    }
+    
+    // Đồng bộ cuộn số dòng với code
+    codeArea.addEventListener('scroll', () => {
+      lineNumbers.scrollTop = codeArea.scrollTop;
+    });
+
+    codeArea.addEventListener('input', updateLineNumbers);
+
+    // Nút thêm dòng
+    function addLine() {
+      codeArea.value += '\n';
+      codeArea.focus();
+      updateLineNumbers();
+    }
+
+    // Gửi code (Lưu vào LocalStorage và tạo link)
+    function submitCode() {
+      const code = codeArea.value;
+      const filename = filenameInput.value;
+      
+      if (!code.trim()) return alert('Vui lòng nhập code!');
+
+      // Tạo ID ngẫu nhiên
+      const id = Math.random().toString(36).substring(2, 8);
+      
+      // Lưu vào LocalStorage của trình duyệt
+      localStorage.setItem('code_' + id, JSON.stringify({ filename, code }));
+
+      // Tạo link raw ảo (dựa trên URL hiện tại)
+      const rawUrl = `${location.origin}${location.pathname}?raw=${id}`;
+      
+      // Hiện modal chứa link
+      rawLinkInput.value = rawUrl;
+      modal.style.display = 'flex';
+    }
+
+    // Kiểm tra nếu URL có ?raw=... thì hiển thị code thuần (giả lập raw)
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const rawId = urlParams.get('raw');
+      
+      if (rawId) {
+        const data = localStorage.getItem('code_' + rawId);
+        if (data) {
+          const parsed = JSON.parse(data);
+          // Xóa toàn bộ giao diện, chỉ hiển thị code thuần
+          document.body.innerHTML = `<pre style="color:white; padding: 20px; font-family: monospace; white-space: pre-wrap; word-wrap: break-word;">${parsed.code.replace(/</g, "&lt;")}</pre>`;
+          document.body.style.background = '#121212';
+        } else {
+          document.body.innerHTML = `<h3 style="color:white; padding: 20px;">Không tìm thấy code!</h3>`;
+        }
+      }
+    });
+
+    updateLineNumbers();
+  </script>
 </body>
 </html>
