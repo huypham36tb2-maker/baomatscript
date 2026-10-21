@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>Lua Share</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism.min.css">
+  <style>
+    body { font-family: system-ui; max-width: 900px; margin: 40px auto; padding: 0 16px; }
+    textarea { width: 100%; height: 300px; font-family: monospace; font-size: 14px; }
+    input, button { font-size: 16px; padding: 6px 0; }
+    #result { background: #f0f0f0; padding: 12px; border-radius: 6px; margin-top: 16px; display: none; }
+    code { background: #e8e8e8; padding: 2px 6px; border-radius: 4px; }
+    pre { padding: 16px; border-radius: 6px; background: #f8f8f8; overflow-x: auto; }
+  </style>
+</head>
+<body>
+
+<!-- ===== CHẾ ĐỘ 1: FORM UPLOAD ===== -->
+<div id="mode-upload" style="display:none">
+  <h1>🐞 Lua Share</h1>
+  <input id="title" placeholder="Tiêu đề snippet" /><br>
+  <textarea id="code" placeholder="-- Dán code Lua vào đây"></textarea>
+  <label><input type="checkbox" id="private"> Riêng tư (cần mật khẩu)</label><br>
+  <input id="password" type="password" placeholder="Mật khẩu (nếu riêng tư)" /><br>
+  <button onclick="submitSnippet()">Tạo link raw</button>
+  <div id="result"></div>
+</div>
+
+<!-- ===== CHẾ ĐỘ 2: XEM SNIPPET ===== -->
+<div id="mode-view" style="display:none">
+  <h2 id="v-title"></h2>
+  <p id="v-views" style="color:#888"></p>
+  <pre><code id="v-code" class="language-lua"></code></pre>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-lua.min.js"></script>
+
+<script>
+// ===== Phát hiện route =====
+const path = location.pathname;
+const isView = path.startsWith('/s/');
+
+if (isView) {
+  document.getElementById('mode-view').style.display = 'block';
+  loadSnippet(path.split('/').pop());
+} else {
+  document.getElementById('mode-upload').style.display = 'block';
+}
+
+// ===== Chế độ upload =====
+async function submitSnippet() {
+  const body = {
+    title: document.getElementById('title').value || 'untitled',
+    code: document.getElementById('code').value,
+    isPrivate: document.getElementById('private').checked,
+    password: document.getElementById('password').value,
+  };
+  const r = await fetch('/api/snippets', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await r.json();
+  if (data.error) return alert(data.error);
+
+  const full = location.origin + data.rawUrl;
+  const box = document.getElementById('result');
+  box.style.display = 'block';
+  box.innerHTML = `
+    <p>✅ Đã tạo!</p>
+    <p>Raw: <code>${full}</code></p>
+    <p>Xem: <a href="${data.viewUrl}" target="_blank">${data.viewUrl}</a></p>
+    <p>Dùng trong script:</p>
+    <code>loadstring(game:HttpGet("${full}"))()</code>
+  `;
+}
+
+// ===== Chế độ xem =====
+async function loadSnippet(id) {
+  const pw = new URLSearchParams(location.search).get('pw') || '';
+  const r = await fetch(`/api/snippets/${id}?pw=${encodeURIComponent(pw)}`);
+  const data = await r.json();
+  if (data.error) {
+    document.getElementById('mode-view').innerHTML = `<h3>❌ ${data.error}</h3>`;
+    return;
+  }
+  document.getElementById('v-title').textContent = data.title;
+  document.getElementById('v-views').textContent = `${data.views} lượt xem`;
+  const el = document.getElementById('v-code');
+  el.textContent = data.code;
+  Prism.highlightElement(el);
+}
+</script>
+</body>
+</html>
